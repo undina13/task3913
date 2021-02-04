@@ -452,23 +452,61 @@ catch (Exception e){
 
     @Override
     public Set<Object> execute(String query) {
-        String[] s = query.split(" ");
+
+        String[] reg = query.split(" and date between");
+        List<MyLog> datesList = null;
+        if(reg.length>1){
+            String []dates = reg[1].split("\"");
+            Date date1 = null;
+            Date date2 = null;
+            try {
+                date1 = new SimpleDateFormat("d.M.y H:m:s").parse(dates[1] );
+                date2 = new SimpleDateFormat("d.M.y H:m:s").parse(dates[3]);
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+
+
+           final Date before = date1;
+           final Date after = date2;
+          datesList = logs.stream()
+                    .filter((m) -> m.date.compareTo(before)>0
+                            && m.date.compareTo(after)<0)
+
+                    .collect(Collectors.toList());
+
+
+        }
+
+
+        String[] s = reg[0].split(" ");
         String param = s[1];
+
+
+
+
+
+
 
         List<MyLog> res = new ArrayList<>();
         if(s.length > 2) {
+            if(datesList ==null){
+                datesList = logs;
+            }
             String param2 = s[3];
             String[] value = query.split("\"");
             String val = value[1];
 
 
             if (param2.equals("user")) {
-                res = logs.stream()
+                res = datesList.stream()
                         .filter(p -> p.user.equals(val))
                         .collect(Collectors.toList());
             }
             if (param2.equals("ip")) {
-                res = logs.stream()
+                res = datesList.stream()
                         .filter(p -> p.ip.equals(val))
                         .collect(Collectors.toList());
             }
@@ -482,7 +520,7 @@ catch (Exception e){
                 }
                 final Date ds = d;
 
-                res = logs.stream()
+                res = datesList.stream()
                         .filter(p -> p.date.compareTo(ds)==0)
                         .collect(Collectors.toList());
             }
@@ -508,7 +546,7 @@ catch (Exception e){
                 }
                 final Event f = event;
 
-                res = logs.stream()
+                res = datesList.stream()
                         .filter(p -> p.event.equals(f))
                         .collect(Collectors.toList());
             }
@@ -528,7 +566,7 @@ catch (Exception e){
                 }
                 final Status f = status;
 
-                res = logs.stream()
+                res = datesList.stream()
                         .filter(p -> p.status.equals(f))
                         .collect(Collectors.toList());
 
@@ -536,7 +574,13 @@ catch (Exception e){
             }
         }
             else {
-                res = logs;
+                if( datesList !=null){
+                    res = datesList;
+                }
+                else res = logs;
+
+
+
             }
 
 
