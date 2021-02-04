@@ -1,9 +1,6 @@
 package com.javarush.task.task39.task3913;
 
-import com.javarush.task.task39.task3913.query.DateQuery;
-import com.javarush.task.task39.task3913.query.EventQuery;
-import com.javarush.task.task39.task3913.query.IPQuery;
-import com.javarush.task.task39.task3913.query.UserQuery;
+import com.javarush.task.task39.task3913.query.*;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -17,7 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery {
+public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQuery {
     MyFileVisitor fileVisitor = new MyFileVisitor();
     List<MyLog> logs;
     public LogParser(Path logDir){
@@ -427,7 +424,7 @@ catch (Exception e){
         Map<Integer, Integer> map = new HashMap<>();
         for (Integer task : taskSet
              ) {
-            Long  d = l.stream()
+            Long d = l.stream()
                     .filter((p) ->p.event.equals(Event.SOLVE_TASK) && p.task == task )
                     .count();
             map.put(task, d.intValue());
@@ -451,5 +448,131 @@ catch (Exception e){
             map.put(task, d.intValue());
         }
         return map;
+    }
+
+    @Override
+    public Set<Object> execute(String query) {
+        String[] s = query.split(" ");
+        String param = s[1];
+
+        List<MyLog> res = new ArrayList<>();
+        if(s.length > 2) {
+            String param2 = s[3];
+            String[] value = query.split("\"");
+            String val = value[1];
+
+
+            if (param2.equals("user")) {
+                res = logs.stream()
+                        .filter(p -> p.user.equals(val))
+                        .collect(Collectors.toList());
+            }
+            if (param2.equals("ip")) {
+                res = logs.stream()
+                        .filter(p -> p.ip.equals(val))
+                        .collect(Collectors.toList());
+            }
+
+            if (param2.equals("date")) {
+                Date d = null;
+                try {
+                    d = new SimpleDateFormat("d.M.y H:m:s").parse(val);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                final Date ds = d;
+
+                res = logs.stream()
+                        .filter(p -> p.date.compareTo(ds)==0)
+                        .collect(Collectors.toList());
+            }
+
+            if (param2.equals("event")) {
+                Event event = null;
+                switch (val) {
+                    case ("LOGIN"):
+                        event = Event.LOGIN;
+                        break;
+                    case ("DOWNLOAD_PLUGIN"):
+                        event = Event.DOWNLOAD_PLUGIN;
+                        break;
+                    case ("WRITE_MESSAGE"):
+                        event = Event.WRITE_MESSAGE;
+                        break;
+                    case ("SOLVE_TASK"):
+                        event = Event.SOLVE_TASK;
+                        break;
+                    case ("DONE_TASK"):
+                        event = Event.DONE_TASK;
+                        break;
+                }
+                final Event f = event;
+
+                res = logs.stream()
+                        .filter(p -> p.event.equals(f))
+                        .collect(Collectors.toList());
+            }
+
+            if (param2.equals("status")) {
+                Status status = null;
+                switch (val) {
+                    case ("OK"):
+                        status = Status.OK;
+                        break;
+                    case ("FAILED"):
+                        status = Status.FAILED;
+                        break;
+                    case ("ERROR"):
+                        status = Status.ERROR;
+                        break;
+                }
+                final Status f = status;
+
+                res = logs.stream()
+                        .filter(p -> p.status.equals(f))
+                        .collect(Collectors.toList());
+
+
+            }
+        }
+            else {
+                res = logs;
+            }
+
+
+        Set<Object> result =null;
+        if(param.equals("user")){
+            result = res.stream()
+                    .map(p -> (Object)p.user)
+                    .collect(Collectors.toSet());
+        }
+        if(param.equals("ip")){
+            result = res.stream()
+                    .map(p -> (Object)p.ip)
+                    .collect(Collectors.toSet());
+        }
+        if(param.equals("date")){
+            result = res.stream()
+                    .map(p -> (Object)p.date)
+                    .collect(Collectors.toSet());
+        }
+        if(param.equals("event")){
+            result = res.stream()
+                    .map(p -> (Object)p.event)
+                    .collect(Collectors.toSet());
+        }
+        if(param.equals("status")){
+            result = res.stream()
+                    .map(p -> (Object)p.status)
+                    .collect(Collectors.toSet());
+        }
+
+
+
+
+
+
+
+        return result;
     }
 }

@@ -61,4 +61,29 @@ public class MyLog {
                 ", status=" + status +
                 '}' + "\n";
     }
+    public Object getParam(String s){
+         if(s.equals("ip"))
+         {
+             return this.ip;
+         }
+        if(s.equals("user"))
+        {
+            return this.user;
+        }
+        if(s.equals("date"))
+        {
+            return this.date;
+        }
+        if(s.equals("event"))
+        {
+            return this.event;
+        }
+        if(s.equals("status"))
+        {
+            return this.status;
+        }
+         return null;
+    }
+
+
 }
